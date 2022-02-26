@@ -1,0 +1,83 @@
+import openpyxl
+import numpy
+from selenium.webdriver import ActionChains
+from selenium.webdriver.support.ui import Select
+import sys
+import time
+
+from selenium import webdriver
+
+path = "C:\\xxxx\\input.xlsx"
+wb_obj = openpyxl.load_workbook(path)
+sheet_obj = wb_obj.active
+
+link = sheet_obj.cell(row = 1, column = 2)
+username = sheet_obj.cell(row = 2, column = 2)
+password =  sheet_obj.cell(row = 3, column = 2)
+rep =  sheet_obj.cell(row = 4, column = 2)
+
+options = webdriver.ChromeOptions()
+options. add_argument('--ignore-ssl-errors=yes')
+options. add_argument('--ignore-certificate-errors')
+options.add_experimental_option('prefs', {
+"download.default_directory": "C:\\xxxx\\Output", #Change default directory for downloads
+"download.prompt_for_download": False, #To auto download the file
+"download.directory_upgrade": True,
+"plugins.always_open_pdf_externally": True #It will not show PDF directly in chrome
+})
+
+driver = webdriver.Chrome("C:\\xxxx\\chromedriver.exe", options=options)
+driver.get(link.value)
+driver.maximize_window()
+driver.implicitly_wait(10)
+driver.find_element_by_name("name").send_keys(username.value)
+driver.find_element_by_name("pwd").send_keys(password.value)
+driver.find_element_by_name("login").click()
+time.sleep(2)
+driver.find_element_by_css_selector("li.accordion:nth-child(4)").click()
+driver.find_element_by_xpath("//a[text()='Add Product']").click()
+
+data = "C:\\xxxx\\Data.xlsx"
+wb_obj = openpyxl.load_workbook(data)
+sheet_obj = wb_obj.active
+
+i = 2
+
+while i <= rep.value:
+    productcat = sheet_obj.cell(row = i, column = 2)
+    productsubcat = sheet_obj.cell(row = i, column = 3)
+    productsubcat = sheet_obj.cell(row = i, column = 3)
+    productname = sheet_obj.cell(row = i, column = 4)
+    stock = sheet_obj.cell(row = i, column = 5)
+    quantity = sheet_obj.cell(row = i, column = 6)
+    volume = sheet_obj.cell(row = i, column = 7)
+    mrp = sheet_obj.cell(row = i, column = 8)
+    msp = sheet_obj.cell(row = i, column = 9)
+    
+    pc = Select(driver.find_element_by_name("category_name"))
+    pc.select_by_visible_text(productcat.value)
+    time.sleep(2)
+    
+    sc = Select(driver.find_element_by_name("sub_cat"))
+    sc.select_by_visible_text(productsubcat.value)
+    time.sleep(2)
+    
+    sc = Select(driver.find_element_by_name("stock"))
+    sc.select_by_visible_text(stock.value)
+    time.sleep(2)
+    
+    vol = Select(driver.find_element_by_name("volumn[]"))
+    vol.select_by_visible_text(volume.value)
+    time.sleep(2)
+    
+    driver.find_element_by_name("pro_name").send_keys(productname.value)
+    driver.find_element_by_name("size[]").send_keys(quantity.value)
+    driver.find_element_by_name("mrp[]").send_keys(mrp.value)
+    driver.find_element_by_name("price[]").send_keys(msp.value)
+    
+    
+    driver.find_element_by_name("main_img").send_keys("C://xxxx/IMAGE.JPG")
+    
+    driver.find_element_by_xpath("//button[@type='submit']").click()
+    
+    i = i+1
